@@ -108,9 +108,11 @@ def main():
 
     # initialize model, criterion/loss_function, optimizer
     model = SimilarityTreeLSTM(
-                args.cuda, vocab.size(),
-                args.input_dim, args.mem_dim,
-                args.hidden_dim, args.num_classes,
+                vocab.size(),
+                args.input_dim,
+                args.mem_dim,
+                args.hidden_dim,
+                args.num_classes,
                 args.sparse)
     criterion = nn.KLDivLoss()
     if args.cuda:
@@ -143,7 +145,7 @@ def main():
     # plug these into embedding matrix inside model
     if args.cuda:
         emb = emb.cuda()
-    model.childsumtreelstm.emb.state_dict()['weight'].copy_(emb)
+    model.emb.weight.data.copy_(emb)
 
     # create trainer object for training and testing
     trainer = Trainer(args, model, criterion, optimizer)
