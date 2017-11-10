@@ -1,9 +1,13 @@
 data
+__pycache__
+.idea
 logs
 *~
 #*#
 *.class
 lib/stanford-parser
+lib/easyccg
 lib/stanford-tagger
 sftp-config.json
 job.py
+checkpoints

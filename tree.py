@@ -1,3 +1,7 @@
+import networkx as nx
+import numpy as np
+import matplotlib.pyplot as plt
+
 # tree object from stanfordnlp/treelstm
 class Tree(object):
     def __init__(self):
@@ -11,7 +15,7 @@ class Tree(object):
         self.children.append(child)
 
     def size(self):
-        if getattr(self,'_size'):
+        if hasattr(self, '_size'):
             return self._size
         count = 1
         for i in range(self.num_children):
@@ -31,3 +35,20 @@ class Tree(object):
             count += 1
         self._depth = count
         return self._depth
+
+    def get_relations(self, rels=None):
+        if rels is None:
+            rels = []
+
+        for ch in self.children:
+            rels.append((self.idx, ch.idx))
+            ch.get_relations(rels)
+
+        return rels
+
+    def plot(self):
+        G = nx.DiGraph()
+        G.add_edges_from(self.get_relations())
+        p=nx.drawing.nx_pydot.to_pydot(G)
+        p.write_png('example.png')
+

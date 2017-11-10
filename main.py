@@ -33,6 +33,8 @@ from trainer import Trainer
 def main():
     global args
     args = parse_args()
+    if not os.path.exists(args.save):
+        os.makedirs(args.save)
     # global logger
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
@@ -49,7 +51,7 @@ def main():
     logger.addHandler(ch)
     # argument validation
     args.cuda = args.cuda and torch.cuda.is_available()
-    if args.sparse and args.wd!=0:
+    if args.sparse and args.wd != 0:
         logger.error('Sparsity and weight decay are incompatible, pick one!')
         exit()
     logger.debug(args)
@@ -58,20 +60,18 @@ def main():
     if args.cuda:
         torch.cuda.manual_seed(args.seed)
         torch.backends.cudnn.benchmark = True
-    if not os.path.exists(args.save):
-        os.makedirs(args.save)
 
-    train_dir = os.path.join(args.data,'train/')
-    dev_dir = os.path.join(args.data,'dev/')
-    test_dir = os.path.join(args.data,'test/')
+    train_dir = os.path.join(args.data, 'train/')
+    dev_dir = os.path.join(args.data, 'dev/')
+    test_dir = os.path.join(args.data, 'test/')
 
     # write unique words from all token files
-    sick_vocab_file = os.path.join(args.data,'sick.vocab')
+    sick_vocab_file = os.path.join(args.data, 'sick.vocab')
     if not os.path.isfile(sick_vocab_file):
-        token_files_a = [os.path.join(split,'a.toks') for split in [train_dir,dev_dir,test_dir]]
-        token_files_b = [os.path.join(split,'b.toks') for split in [train_dir,dev_dir,test_dir]]
+        token_files_a = [os.path.join(split, 'a.toks') for split in [train_dir,dev_dir,test_dir]]
+        token_files_b = [os.path.join(split, 'b.toks') for split in [train_dir,dev_dir,test_dir]]
         token_files = token_files_a+token_files_b
-        sick_vocab_file = os.path.join(args.data,'sick.vocab')
+        sick_vocab_file = os.path.join(args.data, 'sick.vocab')
         build_vocab(token_files, sick_vocab_file)
 
     # get vocab object from vocab file previously written
@@ -79,25 +79,30 @@ def main():
     logger.debug('==> SICK vocabulary size : %d ' % vocab.size())
 
     # load SICK dataset splits
-    train_file = os.path.join(args.data,'sick_train.pth')
+    train_file_name = 'sick_train_%s.pth' % args.syntax
+    train_file = os.path.join(args.data, train_file_name)
     if os.path.isfile(train_file):
         train_dataset = torch.load(train_file)
     else:
-        train_dataset = SICKDataset(train_dir, vocab, args.num_classes)
+        train_dataset = SICKDataset(train_dir, vocab, args.num_classes, args.syntax)
         torch.save(train_dataset, train_file)
     logger.debug('==> Size of train data   : %d ' % len(train_dataset))
-    dev_file = os.path.join(args.data,'sick_dev.pth')
+
+    dev_file_name = 'sick_dev_%s.pth' % args.syntax
+    dev_file = os.path.join(args.data, dev_file_name)
     if os.path.isfile(dev_file):
         dev_dataset = torch.load(dev_file)
     else:
-        dev_dataset = SICKDataset(dev_dir, vocab, args.num_classes)
+        dev_dataset = SICKDataset(dev_dir, vocab, args.num_classes, args.syntax)
         torch.save(dev_dataset, dev_file)
     logger.debug('==> Size of dev data     : %d ' % len(dev_dataset))
-    test_file = os.path.join(args.data,'sick_test.pth')
+
+    test_file_name = 'sick_test_%s.pth' % args.syntax
+    test_file = os.path.join(args.data, test_file_name)
     if os.path.isfile(test_file):
         test_dataset = torch.load(test_file)
     else:
-        test_dataset = SICKDataset(test_dir, vocab, args.num_classes)
+        test_dataset = SICKDataset(test_dir, vocab, args.num_classes, args.syntax)
         torch.save(test_dataset, test_file)
     logger.debug('==> Size of test data    : %d ' % len(test_dataset))
 

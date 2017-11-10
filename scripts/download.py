@@ -12,7 +12,7 @@ import sys
 import os
 import shutil
 import zipfile
-import gzip
+import tarfile
 
 def download(url, dirpath):
     filename = url.split('/')[-1]
@@ -60,6 +60,13 @@ def unzip(filepath):
         zf.extractall(dirpath)
     os.remove(filepath)
 
+def untar(filepath):
+    print("Extracting: " + filepath)
+    dirpath = os.path.dirname(filepath)
+    with tarfile.TarFile(filepath) as tf:
+        tf.extractall(dirpath)
+    os.remove(filepath)
+
 def download_tagger(dirpath):
     tagger_dir = 'stanford-tagger'
     if os.path.exists(os.path.join(dirpath, tagger_dir)):
@@ -73,6 +80,22 @@ def download_tagger(dirpath):
         zf.extractall(dirpath)
     os.remove(filepath)
     os.rename(os.path.join(dirpath, zip_dir), os.path.join(dirpath, tagger_dir))
+
+def download_easyccg(dirpath):
+    dir = 'easyccg'
+    path = os.path.join(dirpath, dir)
+    if os.path.exists(path):
+        print('Found easyccg - skip')
+        return
+    os.mkdir(path)
+
+    url = 'https://github.com/mikelewis0/easyccg/raw/master/easyccg.jar'
+    download(url, path)
+
+    url = 'https://dl.dropboxusercontent.com/s/4h52nnn81jb6nf9/model.zip'
+    filepath = download(url, path)
+    unzip(filepath)
+
 
 def download_parser(dirpath):
     parser_dir = 'stanford-parser'
@@ -94,7 +117,7 @@ def download_wordvecs(dirpath):
         return
     else:
         os.makedirs(dirpath)
-    url = 'http://www-nlp.stanford.edu/data/glove.840B.300d.zip'
+    url = 'http://nlp.stanford.edu/data/glove.840B.300d.zip'
     unzip(download(url, dirpath))
 
 def download_sick(dirpath):
@@ -124,5 +147,6 @@ if __name__ == '__main__':
     # download dependencies
     download_tagger(lib_dir)
     download_parser(lib_dir)
+    download_easyccg(lib_dir)
     download_wordvecs(wordvec_dir)
     download_sick(sick_dir)

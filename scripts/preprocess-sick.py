@@ -24,6 +24,7 @@ def dependency_parse(filepath, cp='', tokenize=True):
     os.system(cmd)
 
 def constituency_parse(filepath, cp='', tokenize=True):
+    print('\nConstituency parsing ' + filepath)
     dirpath = os.path.dirname(filepath)
     filepre = os.path.splitext(os.path.basename(filepath))[0]
     tokpath = os.path.join(dirpath, filepre + '.toks')
@@ -31,6 +32,17 @@ def constituency_parse(filepath, cp='', tokenize=True):
     tokenize_flag = '-tokenize - ' if tokenize else ''
     cmd = ('java -cp %s ConstituencyParse -tokpath %s -parentpath %s %s < %s'
         % (cp, tokpath, parentpath, tokenize_flag, filepath))
+    os.system(cmd)
+
+def ccg_parse(filepath, cp='', tokenize=True):
+    print('\nCCG parsing ' + filepath)
+    dirpath = os.path.dirname(filepath)
+    filepre = os.path.splitext(os.path.basename(filepath))[0]
+    tokpath = os.path.join(dirpath, filepre + '.toks')
+    parentpath = os.path.join(dirpath, filepre + '.ccg_parents')
+    tokenize_flag = '-tokenize - ' if tokenize else ''
+    cmd = ('java -cp %s CCGParse -tokpath %s -parentpath %s -modelpath ./lib/easyccg/model %s < %s'
+           % (cp, tokpath, parentpath, tokenize_flag, filepath))
     os.system(cmd)
 
 def build_vocab(filepaths, dst_path, lowercase=True):
@@ -62,8 +74,10 @@ def split(filepath, dst_dir):
 def parse(dirpath, cp=''):
     dependency_parse(os.path.join(dirpath, 'a.txt'), cp=cp, tokenize=True)
     dependency_parse(os.path.join(dirpath, 'b.txt'), cp=cp, tokenize=True)
-    constituency_parse(os.path.join(dirpath, 'a.txt'), cp=cp, tokenize=True)
-    constituency_parse(os.path.join(dirpath, 'b.txt'), cp=cp, tokenize=True)
+    constituency_parse(os.path.join(dirpath, 'a.txt'), cp=cp)
+    constituency_parse(os.path.join(dirpath, 'b.txt'), cp=cp)
+    ccg_parse(os.path.join(dirpath, 'a.txt'), cp=cp)
+    ccg_parse(os.path.join(dirpath, 'b.txt'), cp=cp)
 
 if __name__ == '__main__':
     print('=' * 80)
@@ -83,7 +97,8 @@ if __name__ == '__main__':
     classpath = ':'.join([
         lib_dir,
         os.path.join(lib_dir, 'stanford-parser/stanford-parser.jar'),
-        os.path.join(lib_dir, 'stanford-parser/stanford-parser-3.5.1-models.jar')])
+        os.path.join(lib_dir, 'stanford-parser/stanford-parser-3.5.1-models.jar'),
+        os.path.join(lib_dir, 'easyccg/easyccg.jar')])
 
     # split into separate files
     split(os.path.join(sick_dir, 'SICK_train.txt'), train_dir)
@@ -94,6 +109,7 @@ if __name__ == '__main__':
     parse(train_dir, cp=classpath)
     parse(dev_dir, cp=classpath)
     parse(test_dir, cp=classpath)
+    # constituency_parse(os.path.join(dev_dir, 'a_test.txt'), cp=cp, tokenize=True)
 
     # get vocabulary
     build_vocab(

@@ -13,7 +13,7 @@ class ChildSumTreeLSTM(nn.Module):
         self.in_dim = in_dim
         self.mem_dim = mem_dim
 
-        self.emb = nn.Embedding(vocab_size,in_dim,
+        self.emb = nn.Embedding(vocab_size, in_dim,
                                 padding_idx=Constants.PAD,
                                 sparse=sparsity)
 
@@ -103,6 +103,7 @@ class SimilarityTreeLSTM(nn.Module):
         self.similarity = Similarity(cuda, mem_dim, hidden_dim, num_classes)
 
     def forward(self, ltree, linputs, rtree, rinputs):
+        #ltree.plot()
         lstate, lhidden = self.childsumtreelstm(ltree, linputs)
         rstate, rhidden = self.childsumtreelstm(rtree, rinputs)
         output = self.similarity(lstate, rstate)

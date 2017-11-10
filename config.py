@@ -2,9 +2,11 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description='PyTorch TreeLSTM for Sentence Similarity on Dependency Trees')
-    #
+    # io
     parser.add_argument('--data', default='data/sick/',
                         help='path to dataset')
+    parser.add_argument('--syntax', default='ccg', choices=['ccg', 'pcfg', 'dependency'],
+                        help='format of sytactic trees')
     parser.add_argument('--glove', default='data/glove/',
                         help='directory with GLOVE embeddings')
     parser.add_argument('--save', default='checkpoints/',
